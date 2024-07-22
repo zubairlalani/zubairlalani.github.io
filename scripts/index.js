@@ -3,8 +3,9 @@ async function chart(splitByTime) {
     const margin = {top: 10, right: 20, bottom: 30, left: 50},
     width = 1000 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
-
-    const data = await d3.csv("../data/cleaned_hm.csv").then(data => preprocess(data, "predicted_category", "reflection_period"))
+    const subcategory = splitByTime ? "reflection_period" : "";
+    console.log("Subcategory: ", subcategory)
+    const data = await d3.csv("../data/cleaned_hm.csv").then(data => preprocess(data, "predicted_category", subcategory))
     // console.log(data)
     // console.log(data.map)
     // const category_freq = preprocess(data);
@@ -44,10 +45,8 @@ async function chart(splitByTime) {
     //     .attr("y", d => y(d.count))
     //     .attr("width", x.bandwidth())
     //     .attr("height", d => height - y(d.count));
-    console.log("Error?")
-    createBarChart(data, "predicted_category", "reflection_period")
-    console.log("Error?")
-
+    
+    createBarChart(data, "predicted_category", subcategory)
 }
 
 function preprocess(data, ...attributes) {
@@ -104,14 +103,13 @@ function createBarChart(data, category, subcategory) {
 
     // X axis
     
-    console.log("Error?")
     const x = d3.scaleLinear()
         .domain([0, d3.max(data, d => d.count)])
         .range([0, width]);
     svg.append("g")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x));
-    console.log("Error?")
+    
     // Y axis
     const y = d3.scaleBand()
         .range([0, height])
@@ -123,33 +121,33 @@ function createBarChart(data, category, subcategory) {
     svg.append("g")
         .call(d3.axisLeft(y));
 
-    console.log("Error?")
-    const categoryGroups = svg.selectAll(".category-group")
-        .data(data)
-        .enter()
-        .append("g")
-        .attr("transform", d => "translate(0," + y(d[category]) + ")");
+    if (subcategory != "") {
+        const categoryGroups = svg.selectAll(".category-group")
+            .data(data)
+            .enter()
+            .append("g")
+            .attr("transform", d => "translate(0," + y(d[category]) + ")");
 
-    categoryGroups.selectAll('rect')
-        .data(d => [d])
-        .enter()
-        .append("rect")
-        .attr("y", d => y1(d[subcategory]))
-        .attr("x", 0)
-        .attr("width", d => x(d.count))
-        .attr("height", y1.bandwidth())
-        .attr("fill", "#69b3a2");
-    console.log("Error?")
+        categoryGroups.selectAll('rect')
+            .data(d => [d])
+            .enter()
+            .append("rect")
+            .attr("y", d => y1(d[subcategory]))
+            .attr("x", 0)
+            .attr("width", d => x(d.count))
+            .attr("height", y1.bandwidth())
+            .attr("fill", "#69b3a2");
+    } else {
 
-    // // Bars
-    // svg.selectAll("myRect")
-    //     .data(data)
-    //     .enter()
-    //     .append("rect")
-    //     .attr("x", x(0))
-    //     .attr("y", d => y(d[category]))
-    //     .attr("width", d => x(d.count))
-    //     .attr("height", y.bandwidth())
-    //     .attr("fill", "#69b3a2");
-    // console.log("Error?")
+        // Bars
+        svg.selectAll("myRect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", x(0))
+            .attr("y", d => y(d[category]))
+            .attr("width", d => x(d.count))
+            .attr("height", y.bandwidth())
+            .attr("fill", "#69b3a2");
+    }
 }
