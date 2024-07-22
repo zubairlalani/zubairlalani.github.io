@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Narrative Viz Project - Zubair Lalani</title>
+
+    <script src='https://d3js.org/d3.v5.min.js'></script>
+    <script src="scripts/index.js"></script>
+
+    <link rel="stylesheet" href="styles/style.css"> 
+</head>
+
+<body>
+    <p>
+        Okay so we see that 100,000 happy moments seem to fall pretty neatly into about 7 categories, with ____, _____, and ______ being the most common. But the users reported happy moments within both the past 24 hours and the past 3 months.
+        So is there a difference in what constitutes a "happy moment" in the short term versus the long term?
+    </p>
+    <div id="chart"></div>
+    <script>
+        chart(splitByTime=true);
+    </script>
+
+    <button id="goPrev">Previous</button>
+    <script>
+        document.getElementById("goPrev").addEventListener("click", function() {
+            window.location.href = "index.html";
+        });
+    </script>
+
+</body>

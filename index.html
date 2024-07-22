@@ -1,1 +1,32 @@
-Hello World
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Narrative Viz Project - Zubair Lalani</title>
+
+    <script src='https://d3js.org/d3.v5.min.js'></script>
+    <script src="scripts/index.js"></script>
+
+    <link rel="stylesheet" href="styles/style.css"> 
+</head>
+
+<body>
+    <p>
+        In life we have many goals. We want to have friends, relationships, work, but really what it all boils down to is happiness. 
+        In the next few slides, we will try to find the truth about what really makes us happy. Is it our career? Money? Feeling attractive? 
+        Let's explore!
+    </p>
+    <div id="chart"></div>
+    <script>
+        chart(splitByTime=false);
+    </script>
+
+    <button id="navigateButton">Go to Page 2</button>
+    <script>
+        document.getElementById("navigateButton").addEventListener("click", function() {
+            window.location.href = "scene2.html";
+        });
+    </script>
+
+</body>
