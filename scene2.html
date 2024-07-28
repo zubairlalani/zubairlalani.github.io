@@ -7,7 +7,8 @@
 
     <script src='https://d3js.org/d3.v5.min.js'></script>
     <script src="scripts/index.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
+    
     <link rel="stylesheet" href="styles/style.css"> 
     <style>
         #wordcloud {
@@ -36,13 +37,13 @@
             <option value="26-35">26-35</option>
             <option value="36-50">36-50</option>
             <option value="51-90">51-90</option>
-            <option value="misc">51-90</option>
+            <option value="misc">All other ages</option>
         </select>
     </div>
 
     <div>
         <label for="splitTime">SplitTime?:</label>
-        <input type="checkbox" id="splitTime">
+        <input type="checkbox" id="splitTime" checked>
     </div>
 
     <div id="chart"></div>
@@ -55,8 +56,8 @@
         d3.select("#ageDropdown").on("change", function() {
             const chartSelection = d3.select("#chart").selectAll("*").remove();
             const selectedAgeGroup = d3.select(this).property("value");
-            
-            chart(splitByTime=splitTimeParam, age=selectedAgeGroup);
+            const splitBy = d3.select("#splitTime").property("checked");
+            chart(splitByTime=splitBy, age=selectedAgeGroup);
         });
 
         d3.select("#splitTime").on("change", function() {

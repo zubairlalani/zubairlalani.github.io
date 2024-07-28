@@ -93,14 +93,16 @@ function createBarChart(data, category, subcategory) {
     const x = d3.scaleLinear()
         .domain([0, d3.max(data, d => d.count)])
         .range([0, width]);
+
     svg.append("g")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x));
     
+    console.log("DATA: ", data.map(d => d[category]).sort())    
     // Y axis
     const y = d3.scaleBand()
         .range([0, height])
-        .domain(data.map(d => d[category]))
+        .domain(data.map(d => d[category]).sort())
         .padding(0.1);
 
     const y1 = d3.scaleBand().range([0, y.bandwidth()]).padding(0.05).domain(data.map(d => d[subcategory]))
@@ -143,8 +145,31 @@ function createBarChart(data, category, subcategory) {
             .attr("height", y.bandwidth())
             .attr("fill", "#69b3a2");
     }
-}
 
-async function udpateChart(splitByTime, age=null) {
+    console.log("X value of affection: ", data.find(item => item.predicted_category == "affection").count)
+
+    const annotations = [
+        {
+            note: {
+                label: "Test_label",
+                title: "Test_test"
+            },
+            x: x(data.find(item => item.predicted_category == "affection").count),
+            y: y("affection") + y.bandwidth() / 2,
+            dy: 100,
+            dx: -100,
+            connector: {end: "dot"}
+        }
+    ];
+
+    const makeAnnotations = d3.annotation()
+            .type(d3.annotationLabel)
+            .annotations(annotations);
+
+    // Append the annotations to the SVG
+    svg.append("g")
+        .attr("class", "annotation-group")
+        .call(makeAnnotations);
+
 
 }
