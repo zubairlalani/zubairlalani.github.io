@@ -14,13 +14,13 @@
 
 <body>
     <p>
-        In life we have many goals. We want to have friends, relationships, work, but really what it all boils down to is happiness. 
-        In the next few slides, we will try to find the truth about what really makes us happy. Is it our career? Money? Feeling attractive? 
-        Let's explore!
+        In the previous slide, we got to see that there are some common themes in the types of words used. For example, words such as "daughter", "husband", "friend", "family" appearing in the top 40 most frequent words seems to indicate a correlation between affection/relationships in our lives and happiness.
+        Let's take a closer look at this by bucketing each of the happy moments into 7 buckets: "achievement", "affection", "bonding", "enjoy_the_moment", "exercise", "leisure". Note that the data was already bucketed by the researchers and provided as a column in the data. They used their own custom classifier,
+        so it may not be perfect, but for our purposes it will help for some initial exploration.
     </p>
     <div id="chart"></div>
     <script>
-        chart(splitByTime=false);
+        chart(2, splitByTime=false);
     </script>
 
     <button id="goPrev">Previous</button>

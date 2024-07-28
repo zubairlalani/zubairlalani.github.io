@@ -1,4 +1,5 @@
-async function chart(splitByTime, plotWords=false, numWords=40, age=null) {
+async function chart(chartNum, splitByTime, plotWords=false, numWords=40, age=null) {
+
     const stopWords = new Set([
         'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours',
         'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself',
@@ -11,12 +12,8 @@ async function chart(splitByTime, plotWords=false, numWords=40, age=null) {
         'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
         'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such',
         'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can',
-        'will', 'just', 'don', 'should', 'now', 'day', 'good', 'great', 'week', 'happy'
+        'will', 'just', 'don', 'should', 'now', 'day', 'good', 'great', 'week', 'happy', "felt", "got"
     ]);
-
-    console.log("First Parameter: " + splitByTime)
-    console.log("Second parameter: " + age)
-
 
     const margin = {top: 10, right: 20, bottom: 30, left: 50},
     width = 1000 - margin.left - margin.right,
@@ -24,7 +21,6 @@ async function chart(splitByTime, plotWords=false, numWords=40, age=null) {
 
 
     const subcategory = splitByTime ? "reflection_period" : "";
-    // console.log("Subcategory: ", subcategory)
     const splitByAge = (age !== null && age !== "all") ? "age" : "";
 
     let data = await d3.csv("../data/test_clean_out.csv");
@@ -32,23 +28,20 @@ async function chart(splitByTime, plotWords=false, numWords=40, age=null) {
         data = preprocess(data, age, "predicted_category", subcategory, splitByAge);
     } else {
         let sentence_data = data.map(d => d.cleaned_hm);
-        console.log(sentence_data)
-        data = countWords(sentence_data).slice(0, numWords);
-        // console.log(wordCounts)
+        data = countWords(sentence_data, stopWords).slice(0, numWords);
     }
 
     const filtered_data = (age !== null && age !== "all") ? filterByAge(data, age) : data;
     
-    // console.log("FILTERED DATA: ", filtered_data);
     const mainCategory = (plotWords) ? "word" : "predicted_category"
-    createBarChart(filtered_data, mainCategory, subcategory);
+    createBarChart(filtered_data, mainCategory, subcategory, chartNum);
 }
 
 function filterByAge(data, ageRange) {
     return data.filter(d => d.age == ageRange)
 }
 
-function countWords(sentences) {
+function countWords(sentences, stopWords) {
     let wordCounts = {};
     sentences.forEach(function(sentence) {
         let words = sentence.split(/\W+/);
@@ -117,7 +110,6 @@ function preprocess(data, ageRange, ...attributes) {
         const keys = key.split('|');
         const obj = { count: counts[key] };
         attributes.forEach((attr, index) => {
-            // console.log(attr)
             obj[attr] = keys[index];
         });
         return obj;
@@ -125,7 +117,7 @@ function preprocess(data, ageRange, ...attributes) {
 }
 
 
-function createBarChart(data, category, subcategory) {
+function createBarChart(data, category, subcategory, chartNum) {
     // Set dimensions
     const margin = {top: 20, right: 30, bottom: 40, left: 100},
         width = 800 - margin.left - margin.right,
@@ -149,7 +141,6 @@ function createBarChart(data, category, subcategory) {
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x));
     
-    console.log("DATA: ", data.map(d => d[category]).sort())    
     // Y axis
     const y = d3.scaleBand()
         .range([0, height])
@@ -197,30 +188,115 @@ function createBarChart(data, category, subcategory) {
             .attr("fill", "#69b3a2");
     }
 
-    console.log("X value of affection: ", data.find(item => item.predicted_category == "affection").count)
-
-    const annotations = [
-        {
-            note: {
-                label: "Test_label",
-                title: "Test_test"
+    if (chartNum == 1) {
+        const annotations = [
+            {
+                x: x(data.find(item => item.word == "friend").count),
+                y: y("friend") + y.bandwidth() / 2,
+                dy: -70,
+                dx: 150,
+                connector: {end: "arrow"}
             },
-            x: x(data.find(item => item.predicted_category == "affection").count),
-            y: y("affection") + y.bandwidth() / 2,
-            dy: 100,
-            dx: -100,
-            connector: {end: "dot"}
+            {
+                x: x(data.find(item => item.word == "family").count),
+                y: y("family") + y.bandwidth() / 2,
+                dy: -23,
+                dx: 155,
+                connector: {end: "arrow"}
+            },
+            {
+                x: x(data.find(item => item.word == "daughter").count),
+                y: y("daughter") + y.bandwidth() / 2,
+                dy: -10,
+                dx: 140,
+                connector: {end: "arrow"}
+            },
+            {
+                x: x(data.find(item => item.word == "made").count) - 100,
+                y: y("made"),
+                dy: -185,
+                dx: 0,
+                connector: {end: "arrow"}
+            }
+        ];
+
+        const makeAnnotations = d3.annotation()
+                .type(d3.annotationLabel)
+                .annotations(annotations);
+
+        // // Append the annotations to the SVG
+        svg.append("g")
+            .attr("class", "annotation-group")
+            .call(makeAnnotations);
+
+        svg.append("text").attr("x", width - 10).attr("y", 40).attr("text-anchor", "end") // Anchor text to the end of the x position
+        .attr("font-size", "16px")
+        .attr("color", "grey")
+        .text("Affection and achievement are common themes");
+
+    } else if (chartNum == 2) {
+        const annotations = [
+            {
+                note: {
+                    label: "Affection Happy Moments: " + data.find(item => item.predicted_category == "affection").count,
+                },
+                x: x(data.find(item => item.predicted_category == "affection").count),
+                y: y("affection") + y.bandwidth() / 2,
+                dy: 100,
+                dx: -50,
+                connector: {end: "arrow"}
+            },
+            {
+                note: {
+                    label: "Achievement Happy Moments: " + data.find(item => item.predicted_category == "achievement").count,
+                },
+                x: x(data.find(item => item.predicted_category == "achievement").count),
+                y: y("achievement") + y.bandwidth() / 2,
+                dy: 100,
+                dx: -100,
+                connector: {end: "arrow"}
+            }
+        ];
+
+        const makeAnnotations = d3.annotation()
+                .type(d3.annotationLabel)
+                .annotations(annotations);
+
+        // Append the annotations to the SVG
+        svg.append("g")
+            .attr("class", "annotation-group")
+            .call(makeAnnotations);
+    } else if (chartNum == 3) {
+        if (subcategory == "reflection_period") {
+            // Add a legend
+            const legendData = [
+                { color: color("24h"), label: "24 hours" },
+                { color: color("3m"), label: "3 months"}
+            ];
+
+            const legend = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", `translate(${width - 100}, ${height - 200})`); // Position the legend
+
+            legend.selectAll("rect")
+                .data(legendData)
+                .enter()
+                .append("rect")
+                .attr("x", 0)
+                .attr("y", (d, i) => i * 20)
+                .attr("width", 18)
+                .attr("height", 18)
+                .attr("fill", d => d.color);
+
+            legend.selectAll("text")
+                .data(legendData)
+                .enter()
+                .append("text")
+                .attr("x", 24)
+                .attr("y", (d, i) => i * 20 + 9)
+                .attr("dy", "0.35em")
+                .text(d => d.label);
         }
-    ];
-
-    const makeAnnotations = d3.annotation()
-            .type(d3.annotationLabel)
-            .annotations(annotations);
-
-    // Append the annotations to the SVG
-    svg.append("g")
-        .attr("class", "annotation-group")
-        .call(makeAnnotations);
-
+    }
 
 }

@@ -24,8 +24,17 @@
 
 <body>
     <p>
-        Okay so we see that 100,000 happy moments seem to fall pretty neatly into about 7 categories, with ____, _____, and ______ being the most common. But the users reported happy moments within both the past 24 hours and the past 3 months.
-        So is there a difference in what constitutes a "happy moment" in the short term versus the long term?
+        We see that "affection" and "achievement" seem to be the biggest contributors overall towards happiness for our participants. But, does that hold true across different age groups? Also, is there a difference in what makes us happy in the short terms versus the long term?
+        Explore for yourself using the "Select Age Group" dropdown and "Split by Time Period" checkbox. 
+        
+        <p>
+            When you select an age group, it will filter the data so that only responses from participants within those age groups are aggregated. The "All other ages" options is for any ages that didn't fall into the other categories. Note that the data under that option is more likely to be inaccurate and due to misinputs from the participants. 
+        </p>
+       
+
+        <p>
+            When participants responded to the survey, they were asked for happy moments within the past 24 hours or within the past 3 months. The Split By Time Period, will split each of the 7 categories by these reflection time periods.
+        </p>> 
     </p>
 
     <div>
@@ -42,7 +51,7 @@
     </div>
 
     <div>
-        <label for="splitTime">SplitTime?:</label>
+        <label for="splitTime">Split by Time Period:</label>
         <input type="checkbox" id="splitTime" checked>
     </div>
 
@@ -51,13 +60,13 @@
         
         const splitTimeParam = d3.select("#splitTime").property("checked");
 
-        chart(splitByTime=splitTimeParam);
+        chart(3, splitByTime=splitTimeParam);
 
         d3.select("#ageDropdown").on("change", function() {
             const chartSelection = d3.select("#chart").selectAll("*").remove();
             const selectedAgeGroup = d3.select(this).property("value");
             const splitBy = d3.select("#splitTime").property("checked");
-            chart(splitByTime=splitBy, age=selectedAgeGroup);
+            chart(3, splitByTime=splitBy, plotWords=false, numWords=40, age=selectedAgeGroup);
         });
 
         d3.select("#splitTime").on("change", function() {
@@ -65,11 +74,11 @@
             const splitBy = d3.select("#splitTime").property("checked");
             const selectedAgeGroup = d3.select("#ageDropdown").property("value");
 
-            chart(splitByTime=splitBy, age=selectedAgeGroup);
+            chart(3, splitByTime=splitBy, plotWords=false, numWords=40, age=selectedAgeGroup);
         });
 
     </script>
-    
+
     <button id="goPrev">Previous</button>
     <script>
         document.getElementById("goPrev").addEventListener("click", function() {
