@@ -9,6 +9,16 @@
     <script src="scripts/index.js"></script>
 
     <link rel="stylesheet" href="styles/style.css"> 
+    <style>
+        #wordcloud {
+            font-family: "Arial", sans-serif;
+            width: 800px;
+            height: 500px;
+            margin: auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -16,9 +26,47 @@
         Okay so we see that 100,000 happy moments seem to fall pretty neatly into about 7 categories, with ____, _____, and ______ being the most common. But the users reported happy moments within both the past 24 hours and the past 3 months.
         So is there a difference in what constitutes a "happy moment" in the short term versus the long term?
     </p>
+
+    <div>
+        <label for="ageDropdown">Select Age Group:</label>
+        <select id="ageDropdown">
+            <option value="all">All Ages</option>
+            <option value="12-18">12-18</option>
+            <option value="19-25">19-25</option>
+            <option value="26-35">26-35</option>
+            <option value="36-50">36-50</option>
+            <option value="51-90">51-90</option>
+            <option value="misc">51-90</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="splitTime">SplitTime?:</label>
+        <input type="checkbox" id="splitTime">
+    </div>
+
     <div id="chart"></div>
     <script>
-        chart(splitByTime=true);
+        
+        const splitTimeParam = d3.select("#splitTime").property("checked");
+
+        chart(splitByTime=splitTimeParam);
+
+        d3.select("#ageDropdown").on("change", function() {
+            const chartSelection = d3.select("#chart").selectAll("*").remove();
+            const selectedAgeGroup = d3.select(this).property("value");
+            
+            chart(splitByTime=splitTimeParam, age=selectedAgeGroup);
+        });
+
+        d3.select("#splitTime").on("change", function() {
+            const chartSelection = d3.select("#chart").selectAll("*").remove();
+            const splitBy = d3.select("#splitTime").property("checked");
+            const selectedAgeGroup = d3.select("#ageDropdown").property("value");
+
+            chart(splitByTime=splitBy, age=selectedAgeGroup);
+        });
+
     </script>
 
     <button id="goPrev">Previous</button>

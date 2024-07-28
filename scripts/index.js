@@ -1,89 +1,76 @@
-async function chart(splitByTime) {
+async function chart(splitByTime, age=null) {
     console.log("First Parameter: " + splitByTime)
+    console.log("Second parameter: " + age)
+
+
     const margin = {top: 10, right: 20, bottom: 30, left: 50},
     width = 1000 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
+
+
     const subcategory = splitByTime ? "reflection_period" : "";
-    console.log("Subcategory: ", subcategory)
-    const data = await d3.csv("../data/cleaned_hm.csv").then(data => preprocess(data, "predicted_category", subcategory))
-    // console.log(data)
-    // console.log(data.map)
-    // const category_freq = preprocess(data);
-    // console.log(category_freq)
-    // let formattedData = Object.keys(data).map(function(key) {
-    //     const keys = key.split('|');
-    //     const obj = {count: counts[key]};
-    //     attributes
-    //     return {
-    //         category: key,
-    //         count: data[key]
-    //     };
-    // });
-    console.log(data)
+    // console.log("Subcategory: ", subcategory)
+    const splitByAge = (age !== null && age !== "all") ? "age" : "";
 
-    // console.log(formattedData);
-
-    // let svg = d3.select("body").select("#overview").append("svg")
-    //     .attr("width", width + margin.left + margin.right)
-    //     .attr("height", height + margin.top + margin.bottom)
-    //     .append("g")
-    //     .attr("transform",
-    //         "translate(" + margin.left + "," + margin.top + ")");
+    // console.log("About to preprocess...")
+    const data = await d3.csv("../data/test_clean_out.csv").then(data => preprocess(data, age, "predicted_category", subcategory, splitByAge))
     
-    // const x = d3.scaleBand().range([0, width]).domain(formattedData.map(d => d.category));
-    // svg.append("g")
-    //     .attr("transform", "translate(0," + height + ")")
-    //     .call(d3.axisBottom(x));
+    const filtered_data = (age !== null && age !== "all") ? filterByAge(data, age) : data;
 
-    // const y = d3.scaleLinear().range([height, 0]).domain([0, d3.max(formattedData, d => d.count)])
-    // svg.append("g")
-    //     .call(d3.axisLeft(y));
-
-    // svg.append("g").selectAll(".bar")
-    //     .data(data).enter().append("rect").attr("class", "bar")
-    //     .attr("x", d => x(d.category))
-    //     .attr("y", d => y(d.count))
-    //     .attr("width", x.bandwidth())
-    //     .attr("height", d => height - y(d.count));
-    
-    createBarChart(data, "predicted_category", subcategory)
+    createBarChart(filtered_data, "predicted_category", subcategory)
 }
 
-function preprocess(data, ...attributes) {
-    const counts = {};
+function filterByAge(data, ageRange) {
+    return data.filter(d => d.age == ageRange)
+}
 
+function preprocess(data, ageRange, ...attributes) {
+    // return data
+    const counts = {};
+    // console.log("counting...")
     data.forEach(item => {
-        const key = attributes.map(attr => item[attr]).join('|');
+        const key = attributes.map(function(attr) {
+            if (attr == "age") {
+                const age = item[attr]
+                let ageGroup = "all"
+                if (age >= 12 && age <= 18) {
+                    ageGroup = "12-18";
+                } else if (age >= 19 && age <= 25) {
+                    ageGroup = "19-25";
+
+                } else if (age >= 26 && age <= 35) {
+                    ageGroup = "26-35";
+
+                } else if (age >= 36 && age <= 50) {
+                    ageGroup = "36-50";
+
+                } else if (age >= 51 && age <= 90) {
+                    ageGroup = "51-90";
+
+                } else {
+                    ageGroup = "misc"
+                }
+                return ageGroup
+            }
+
+            return item[attr]
+        }).join('|');
+
         if(!counts[key]) {
             counts[key] = 0;
         }
         counts[key]++;
-        
     });
-
+    // console.log("reformatting...")
     return Object.keys(counts).map(key => {
         const keys = key.split('|');
         const obj = { count: counts[key] };
         attributes.forEach((attr, index) => {
+            // console.log(attr)
             obj[attr] = keys[index];
         });
         return obj;
     });
-    // console.log(counts)
-    // var mp = new Map();
-    // n = data.length;
-    // // Traverse through array elements and
-    // // count frequencies
-    // for (var i = 0; i < n; i++) {
-    //     let k = data[i].predicted_category
-
-    //     if (mp.has(k))
-    //         mp.set(k, mp.get(k) + 1)
-    //     else
-    //         mp.set(k, 1)
-    // }
-
-    // return Object.fromEntries(mp)
 }
 
 
@@ -92,7 +79,7 @@ function createBarChart(data, category, subcategory) {
     const margin = {top: 20, right: 30, bottom: 40, left: 100},
         width = 800 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
-
+    
     // Create SVG element
     const svg = d3.select("#chart")
         .append("svg")
@@ -121,6 +108,11 @@ function createBarChart(data, category, subcategory) {
     svg.append("g")
         .call(d3.axisLeft(y));
 
+    const subCategories = Array.from(new Set(data.map(d => d.subCategory)));
+    const color = d3.scaleOrdinal()
+            .domain(data.map(d => d[subcategory]))
+            .range(d3.schemeCategory10);
+            
     if (subcategory != "") {
         const categoryGroups = svg.selectAll(".category-group")
             .data(data)
@@ -136,7 +128,8 @@ function createBarChart(data, category, subcategory) {
             .attr("x", 0)
             .attr("width", d => x(d.count))
             .attr("height", y1.bandwidth())
-            .attr("fill", "#69b3a2");
+            .attr("fill", d => color(d[subcategory]));
+
     } else {
 
         // Bars
@@ -150,4 +143,8 @@ function createBarChart(data, category, subcategory) {
             .attr("height", y.bandwidth())
             .attr("fill", "#69b3a2");
     }
+}
+
+async function udpateChart(splitByTime, age=null) {
+
 }
