@@ -1,4 +1,19 @@
-async function chart(splitByTime, age=null) {
+async function chart(splitByTime, plotWords=false, numWords=40, age=null) {
+    const stopWords = new Set([
+        'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours',
+        'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself',
+        'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which',
+        'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be',
+        'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an',
+        'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by',
+        'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before',
+        'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over',
+        'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
+        'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such',
+        'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can',
+        'will', 'just', 'don', 'should', 'now', 'day', 'good', 'great', 'week', 'happy'
+    ]);
+
     console.log("First Parameter: " + splitByTime)
     console.log("Second parameter: " + age)
 
@@ -12,22 +27,58 @@ async function chart(splitByTime, age=null) {
     // console.log("Subcategory: ", subcategory)
     const splitByAge = (age !== null && age !== "all") ? "age" : "";
 
-    // console.log("About to preprocess...")
-    const data = await d3.csv("../data/test_clean_out.csv").then(data => preprocess(data, age, "predicted_category", subcategory, splitByAge))
-    
-    const filtered_data = (age !== null && age !== "all") ? filterByAge(data, age) : data;
+    let data = await d3.csv("../data/test_clean_out.csv");
+    if (plotWords == false) {
+        data = preprocess(data, age, "predicted_category", subcategory, splitByAge);
+    } else {
+        let sentence_data = data.map(d => d.cleaned_hm);
+        console.log(sentence_data)
+        data = countWords(sentence_data).slice(0, numWords);
+        // console.log(wordCounts)
+    }
 
-    createBarChart(filtered_data, "predicted_category", subcategory)
+    const filtered_data = (age !== null && age !== "all") ? filterByAge(data, age) : data;
+    
+    // console.log("FILTERED DATA: ", filtered_data);
+    const mainCategory = (plotWords) ? "word" : "predicted_category"
+    createBarChart(filtered_data, mainCategory, subcategory);
 }
 
 function filterByAge(data, ageRange) {
     return data.filter(d => d.age == ageRange)
 }
 
+function countWords(sentences) {
+    let wordCounts = {};
+    sentences.forEach(function(sentence) {
+        let words = sentence.split(/\W+/);
+        words.forEach(function(word) {
+            if (word.length > 0) {
+                word = word.toLowerCase();
+                if(!stopWords.has(word)) {
+                    if (wordCounts[word]) {
+                        wordCounts[word]++;
+                    } else {
+                        wordCounts[word] = 1;
+                    }
+                }
+            }
+        });
+    });
+    
+    // Convert object to array
+    return Object.keys(wordCounts).map(function(key) {
+        return {
+            word: key,
+            count: wordCounts[key]
+        };
+    }).sort((a, b) => b.count - a.count); // Sort by count
+}
+
 function preprocess(data, ageRange, ...attributes) {
     // return data
     const counts = {};
-    // console.log("counting...")
+
     data.forEach(item => {
         const key = attributes.map(function(attr) {
             if (attr == "age") {
@@ -61,7 +112,7 @@ function preprocess(data, ageRange, ...attributes) {
         }
         counts[key]++;
     });
-    // console.log("reformatting...")
+    
     return Object.keys(counts).map(key => {
         const keys = key.split('|');
         const obj = { count: counts[key] };
