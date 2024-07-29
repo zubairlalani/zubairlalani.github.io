@@ -59,17 +59,15 @@ function countWords(sentences, stopWords) {
         });
     });
     
-    // Convert object to array
     return Object.keys(wordCounts).map(function(key) {
         return {
             word: key,
             count: wordCounts[key]
         };
-    }).sort((a, b) => b.count - a.count); // Sort by count
+    }).sort((a, b) => b.count - a.count);
 }
 
 function preprocess(data, ageRange, ...attributes) {
-    // return data
     const counts = {};
 
     data.forEach(item => {
@@ -123,15 +121,12 @@ function createBarChart(data, category, subcategory, chartNum) {
         width = 800 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
     
-    // Create SVG element
     const svg = d3.select("#chart")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // X axis
     
     const x = d3.scaleLinear()
         .domain([0, d3.max(data, d => d.count)])
@@ -141,7 +136,6 @@ function createBarChart(data, category, subcategory, chartNum) {
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x));
     
-    // Y axis
     const y = d3.scaleBand()
         .range([0, height])
         .domain(data.map(d => d[category]).sort())
@@ -176,7 +170,6 @@ function createBarChart(data, category, subcategory, chartNum) {
 
     } else {
 
-        // Bars
         svg.selectAll("myRect")
             .data(data)
             .enter()
@@ -224,15 +217,16 @@ function createBarChart(data, category, subcategory, chartNum) {
                 .type(d3.annotationLabel)
                 .annotations(annotations);
 
-        // // Append the annotations to the SVG
         svg.append("g")
             .attr("class", "annotation-group")
             .call(makeAnnotations);
 
-        svg.append("text").attr("x", width - 10).attr("y", 40).attr("text-anchor", "end") // Anchor text to the end of the x position
+        svg.append("text").attr("x", width - 10).attr("y", 40).attr("text-anchor", "end")
         .attr("font-size", "16px")
         .attr("color", "grey")
         .text("Affection and achievement are common themes");
+
+        
 
     } else if (chartNum == 2) {
         const annotations = [
@@ -262,41 +256,39 @@ function createBarChart(data, category, subcategory, chartNum) {
                 .type(d3.annotationLabel)
                 .annotations(annotations);
 
-        // Append the annotations to the SVG
         svg.append("g")
             .attr("class", "annotation-group")
             .call(makeAnnotations);
-    } else if (chartNum == 3) {
-        if (subcategory == "reflection_period") {
-            // Add a legend
-            const legendData = [
-                { color: color("24h"), label: "24 hours" },
-                { color: color("3m"), label: "3 months"}
-            ];
+        } else if (chartNum == 3) {
+            if (subcategory == "reflection_period") {
+                const legendData = [
+                    { color: color("24h"), label: "24 hours" },
+                    { color: color("3m"), label: "3 months"}
+                ];
 
-            const legend = svg.append("g")
-                .attr("class", "legend")
-                .attr("transform", `translate(${width - 100}, ${height - 200})`); // Position the legend
+                const legend = svg.append("g")
+                    .attr("class", "legend")
+                    .attr("transform", `translate(${width - 100}, ${height - 200})`);
 
-            legend.selectAll("rect")
-                .data(legendData)
-                .enter()
-                .append("rect")
-                .attr("x", 0)
-                .attr("y", (d, i) => i * 20)
-                .attr("width", 18)
-                .attr("height", 18)
-                .attr("fill", d => d.color);
+                legend.selectAll("rect")
+                    .data(legendData)
+                    .enter()
+                    .append("rect")
+                    .attr("x", 0)
+                    .attr("y", (d, i) => i * 20)
+                    .attr("width", 18)
+                    .attr("height", 18)
+                    .attr("fill", d => d.color);
 
-            legend.selectAll("text")
-                .data(legendData)
-                .enter()
-                .append("text")
-                .attr("x", 24)
-                .attr("y", (d, i) => i * 20 + 9)
-                .attr("dy", "0.35em")
-                .text(d => d.label);
-        }
+                legend.selectAll("text")
+                    .data(legendData)
+                    .enter()
+                    .append("text")
+                    .attr("x", 24)
+                    .attr("y", (d, i) => i * 20 + 9)
+                    .attr("dy", "0.35em")
+                    .text(d => d.label);
+            }
     }
 
 }
